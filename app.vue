@@ -1,21 +1,26 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, reactive } from 'vue'
 
 const msg = ref('Hello World!')
 
+const state = reactive({count:0})
+const characterCount = ()=>{
+  return newItem.value.length
+}
+
+const reversedItems = computed(()=> [...items.value].reverse())
 const items = ref([])
-
-let ids = ref(0)
-
+const ids = ref(0)
 const newItem = ref('')
 const nb = ref()
 const urgent = ref(false)
 
 const addItem = ()=>{
   if(newItem.value){
-    items.value.push({idActive: ids.value,label: newItem.value, number: nb.value,active: false, purchased: false, highPriority: false})
+    items.value.push({idActive: ids.value,label: newItem.value, number: nb.value,active: false, purchased: false, highPriority: urgent.value})
     nb.value = ''
     newItem.value = ''
+    urgent.value = false
     ids.value++
   }
 }
@@ -36,24 +41,28 @@ const togglePurchased = (item) =>{
   item.purchased = !item.purchased
 }
 
-const togglehighPriority = (item) =>{
-  item.purchased = !item.purchased
-}
-
 // ids.value = items.value[items.value.length - 1].id +1
 </script>
 
 <template>
   <h1>{{ msg }}</h1>
+  <div class="inputItem">
+    <input type="number" v-model="nb" placeholder="How many" />
+    <input type="text" v-model="newItem" v-on:keyup.="" placeholder="Add an item" />
+    <div class="checkUrgent">
+      <input type="checkbox" v-model="urgent" @:click="" />
+      <label>Urgent</label>
+    </div>
+    <button v-bind:disabled="!newItem" v-on:click="addItem">Add item</button>
+    <p class="counter">{{characterCount()}}/200</p>
+  </div>
 
-  <input type="number" v-model="nb" v-on:keyup.="" placeholder="How many" />
-  <input type="text" v-model="newItem" v-on:keyup.="" placeholder="Add an item" />
-  <button v-bind:disabled="!newItem" v-on:click="addItem">Add item</button>
 
   <ul>
     <li 
-      v-for="({idActive, label, number,active, purchased, highPriority},index) in items" 
-      key="id" @mouseup="showDelete" 
+      v-for="({idActive, label, number,active, purchased, highPriority},index) in reversedItems" 
+      :key="items.id" 
+      @mouseup="showDelete" 
       class="static-class"
       :class="[
         purchased ? 'strikeout text-gray': 'underlined',
@@ -67,7 +76,6 @@ const togglehighPriority = (item) =>{
   </ul>
   <p v-if="!items.length">Nothing to see here</p>
 
-<h1>{{ids}}</h1>
 </template>
 
 <style>
@@ -92,6 +100,13 @@ body{
   gap: 20px;
 }
 
+.inputItem{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .deleteBtn{
   background: transparent;
   border: none;
@@ -106,12 +121,21 @@ body{
 }
 
 .priority{
-  font-weight: bold;
+  font-weight: 600;
   color: orange;
 }
 
 .text-gray{
   color: #818181;
 }
+
+.counter{
+  margin-top: 0px;
+  margin-left: 10px;
+  font-size: 14px;
+  color: lightslategray;
+
+}
+
 </style>
 
